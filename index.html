@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cybermobbing Simulation Splash</title>
+    <!-- Lade Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'deep-red': '#450a0a',
+                        'accent-red': '#dc2626',
+                        'bright-red': '#ff0000',
+                        'chat-dark': '#0c0c0c',
+                        'msg-them': '#1f1f1f',
+                        'msg-me': '#5b1010', 
+                    },
+                    boxShadow: {
+                        'red-glow': '0 0 25px rgba(220, 38, 38, 0.5)',
+                    },
+                    animation: {
+                        'pop-in': 'popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
+                        'pulse-red': 'pulseRed 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'hacker-glitch': 'hackerGlitch 0.3s infinite',
+                        'text-flicker': 'textFlicker 3s infinite',
+                        'fade-out': 'fadeOut 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        popIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.9) translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
+                        },
+                        pulseRed: {
+                            '0%, 100%': { opacity: 1, textShadow: '0 0 10px #dc2626' },
+                            '50%': { opacity: .7, textShadow: '0 0 2px #450a0a' },
+                        },
+                        textFlicker: {
+                            '0%, 19.999%, 22%, 62.999%, 64%, 64.999%, 70%, 100%': { opacity: 1 },
+                            '20%, 21.999%, 63%, 63.999%, 65%, 69.999%': { opacity: 0.4 },
+                        },
+                        fadeOut: {
+                            '0%': { opacity: 1 },
+                            '100%': { opacity: 0, visibility: 'hidden' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            /* Dunkelrote Atmosphäre Hintergrund */
+            background: radial-gradient(circle at center, #1a0000 0%, #000000 100%);
+            color: #eee;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: hidden; /* Verhindert Scrollen während Splash */
+        }
+
+        /* SPLASH SCREEN */
+        #splash-screen {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #000;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            background: radial-gradient(circle at center, #1a0000 0%, #000000 100%);
+        }
+
+        .splash-logo-container {
+            text-align: center;
+        }
+
+        .splash-skull {
+            font-size: 5rem;
+            margin-bottom: 1rem;
+            display: block;
+            animation: pulseRed 2s infinite;
+        }
+
+        .splash-text {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #dc2626;
+            letter-spacing: 0.2em;
+            text-shadow: 0 0 15px rgba(220, 38, 38, 0.6);
+            border-top: 2px solid #450a0a;
+            border-bottom: 2px solid #450a0a;
+            padding: 10px 0;
+        }
+
+        .splash-loading {
+            margin-top: 2rem;
+            font-family: monospace;
+            color: #450a0a;
+            font-size: 0.8rem;
+        }
+
+        /* Hauptcontainer für Status + Handy */
+        .main-container {
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            opacity: 0; /* Startet unsichtbar, wird eingeblendet */
+            transition: opacity 1s ease-in;
+        }
+
+        /* --- STATUS LEISTE (EXTERN) --- */
+        .status-header-external {
+            background-color: #050000;
+            border: 1px solid #450a0a;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.1);
+        }
+
+        .status-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .status-label {
+            color: #991b1b;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        #health-percent-text {
+            color: #ff0000;
+            font-weight: bold;
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px #dc2626;
+        }
+
+        .progress-track-external {
+            height: 12px;
+            background-color: #1a0505;
+            border-radius: 6px;
+            border: 1px solid #333;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #991b1b, #dc2626);
+            width: 100%;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 10px #7f1d1d;
+        }
+
+        /* --- HANDY RAHMEN --- */
+        #phone-frame {
+            width: 100%;
+            height: 650px;
+            display: flex;
+            flex-direction: column;
+            background-color: #0c0c0c;
+            position: relative;
+            border: 2px solid #450a0a;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(100, 0, 0, 0.3);
+        }
+
+        header.phone-header {
+            background-color: #0a0a0a;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #2a0505;
+            z-index: 10;
+        }
+
+        .avatar-group {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #450a0a, #1f2937);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 10px;
+            border: 1px solid #450a0a;
+            color: #fca5a5;
+        }
+
+        /* Chat Area */
+        #chat-area {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            background-color: #030000;
+            background-image: radial-gradient(#1f0505 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Message Bubbles */
+        .message {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+            opacity: 0;
+            position: relative;
+        }
+
+        .msg-them {
+            align-self: flex-start;
+            background-color: #111;
+            border: 1px solid #2a0505;
+            color: #d1d5db;
+        }
+        
+        .msg-me {
+            align-self: flex-end;
+            background-color: #450a0a; 
+            color: #fecaca;
+            border: 1px solid #7f1d1d;
+        }
+
+        /* Sender Names */
+        .sender-name {
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 2px;
+            display: block;
+            text-transform: uppercase;
+        }
+        .sender-Alex { color: #ef4444; }
+        .sender-Jason { color: #f87171; }
+        .sender-Chloe { color: #fda4af; }
+        .sender-Siema { color: #c4b5fd; }
+        .sender-Noel { color: #34d399; }
+        .sender-Lia { color: #fcd34d; }
+
+        /* Photo Message Simulation */
+        .photo-placeholder {
+            width: 200px;
+            height: 140px;
+            background-color: #120505;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            margin-top: 4px;
+            margin-bottom: 4px;
+            color: #dc2626;
+            font-size: 10px;
+            border: 1px dashed #7f1d1d;
+            font-family: monospace;
+        }
+
+        /* Controls / Options */
+        #controls {
+            padding: 15px;
+            background-color: #0a0000;
+            border-top: 1px solid #2a0505;
+            min-height: 200px;
+        }
+
+        .option-btn {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            background-color: #1a0505;
+            color: #fecaca;
+            border: 1px solid #450a0a;
+            border-radius: 4px;
+            text-align: left;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        .option-btn:hover {
+            background-color: #450a0a;
+            border-color: #ff0000;
+            color: white;
+            box-shadow: 0 0 10px rgba(220, 38, 38, 0.3);
+        }
+
+        /* GLITCH TEXT END SCREEN */
+        .hacker-text {
+            font-family: 'Courier New', Courier, monospace;
+            color: #ff0000;
+            text-shadow: 2px 0 #450a0a, -2px 0 #000;
+            position: relative;
+        }
+        
+    </style>
+</head>
+<body>
+
+    <!-- SPLASH SCREEN -->
+    <div id="splash-screen">
+        <div class="splash-logo-container">
+            <span class="splash-skull">💀</span>
+            <div class="splash-text">KLASSE 10B</div>
+            <div class="splash-loading">... SYSTEM ZUGRIFF ...</div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div class="main-container" id="main-app">
+        <!-- EXTERNE STATUSLEISTE -->
+        <div class="status-header-external">
+            <div class="status-title-row">
+                <span class="status-label">MENTALE STÄRKE</span>
+                <span id="health-percent-text">100%</span>
+            </div>
+            <div class="progress-track-external">
+                <div id="health-bar-fill" class="progress-bar-fill"></div>
+            </div>
+        </div>
+
+        <!-- HANDY -->
+        <div id="phone-frame">
+            <!-- App Header -->
+            <header class="phone-header">
+                <div class="text-gray-400 text-2xl mr-3">←</div>
+                <div class="avatar-group text-red-200">10B</div>
+                <div class="flex flex-col ml-2">
+                    <span class="text-white font-bold text-sm">Klasse 10B 💀</span>
+                    <span class="text-gray-500 text-xs truncate w-40">Alex, Jason, Chloe, Siema, Du...</span>
+                </div>
+            </header>
+
+            <!-- Chat Window -->
+            <div id="chat-area">
+                <div class="text-center text-xs text-gray-600 my-4 bg-[#1a0505] py-1 rounded inline-block self-center px-3 border border-[#2a0505]">
+                    Heute
+                </div>
+                <!-- Messages appear here -->
+            </div>
+
+            <!-- Interaction Area -->
+            <div id="controls">
+                <div id="loading-text" class="text-red-600 text-center text-sm animate-pulse-red mt-4 font-mono">
+                    > Eingehende Nachricht...
+                </div>
+                <div id="options-wrapper" class="hidden">
+                    <p class="text-red-500 text-xs mb-3 uppercase tracking-widest text-center font-bold font-mono">/// REAKTION WÄHLEN ///</p>
+                    <div id="buttons-container"></div>
+                </div>
+            </div>
+            
+            <!-- Game Over Screen -->
+            <div id="game-over" class="absolute inset-0 bg-black z-50 flex flex-col items-center justify-center hidden text-center p-8">
+                <!-- Glitch Text Container -->
+                <div class="border border-red-900 p-6 bg-[#0a0000] shadow-[0_0_30px_rgba(255,0,0,0.1)] w-full max-w-sm">
+                    <p id="end-text" class="text-red-500 text-lg md:text-xl font-mono leading-relaxed animate-text-flicker hacker-text">
+                        INITIALIZING...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Game Data ---
+        let mentalHealth = 100;
+        let currentStep = 0;
+        
+        const healthBarFill = document.getElementById('health-bar-fill');
+        const healthPercentText = document.getElementById('health-percent-text');
+        
+        const chatArea = document.getElementById('chat-area');
+        const loadingText = document.getElementById('loading-text');
+        const optionsWrapper = document.getElementById('options-wrapper');
+        const buttonsContainer = document.getElementById('buttons-container');
+
+        const scenarios = [
+            {
+                // 1. REFERAT
+                messages: [
+                    { sender: "Alex", text: "Leute, habt ihr Leo heute gesehen? 😂 Der war völlig lost beim Referat." },
+                    { sender: "Jason", text: "Ja omg. Er hat einfach gestottert wie ein Kleinkind." },
+                    { sender: "Alex", text: "Vielleicht sollte er einfach nicht mehr reden. Wäre besser für alle." }
+                ],
+                options: [
+                    { text: "A: Ignorieren (Handy weglegen)", impact: -5, msg: "...", feedback: "" },
+                    { text: "B: Locker reagieren „Kann mal passieren“", impact: +5, msg: "Kann mal passieren, chillt mal.", feedback: "" },
+                    { text: "C: Zurück beleidigen", impact: -30, msg: "Dein Referat war nicht besser du H...", feedback: "" }
+                ]
+            },
+            {
+                // 2. FOTO
+                messages: [
+                    { sender: "Jason", text: "[BILD DATEI]", type: 'photo' },
+                    { sender: "Jason", text: "Checkt mal diesen Blick ab. 😂 Der sieht aus, als hätte er gerade gerafft, dass er keine Freunde hat." },
+                    { sender: "Chloe", text: "Omg Jason, du bist so fies 💀💀💀 Aber ehrlich, was ist das für ein Pullover?" },
+                    { sender: "Siema", text: 'Hahaha, safe vom Flohmarkt. "Vintage" und so. 🗑️' },
+                    { sender: "Alex", text: "@Leo Erde an Leo. Lebst du noch oder warum antwortest du nicht??" },
+                    { sender: "Siema", text: "Er ist online, er schreibt bestimmt gerade einen Aufsatz darüber, wie gemein wir sind. 😂" }
+                ],
+                options: [
+                    { text: "A: Rechtfertigen „Der Pulli ist cool“", impact: -10, msg: "Der Pulli ist cool, lasst mich in Ruhe.", feedback: "" },
+                    { text: "B: Screenshot machen (Beweis)", impact: +10, msg: "(Screenshot erstellt)", systemMsg: true, feedback: "" },
+                    { text: "C: Gar nichts tun", impact: -10, msg: "...", feedback: "" }
+                ]
+            },
+            {
+                // 3. PARTY
+                messages: [
+                    { sender: "Noel", text: "Also Samstag 19 Uhr bei mir? Ich hab Sturmfrei. 🍻🏠" },
+                    { sender: "Lia", text: "Jaaa safe! Ich bring Getränke mit. Wer kommt alles?" },
+                    { sender: "Chloe", text: "Alle außer Leo. 🚫" },
+                    { sender: "Siema", text: "Hahaha logisch. Als ob das Opfer eingeladen wäre." },
+                    { sender: "Alex", text: "@Leo Junge, ich seh doch, dass du das liest. Verpiss dich einfach aus der Gruppe. Niemand will dich hier haben." },
+                    { sender: "Siema", text: "Echt so, das ist voll cringe, wie du immer nur mitliest und nichts sagst. Stalker vibes. 🤢" }
+                ],
+                options: [
+                    { text: "A: Gruppe verlassen (Flucht)", impact: -15, msg: "Leo hat die Gruppe verlassen.", systemMsg: true, feedback: "" },
+                    { text: "B: „Viel Spaß euch“ (Sarkastisch)", impact: -5, msg: "Viel Spaß euch noch.", feedback: "" },
+                    { text: "C: Nichts schreiben (Stärke zeigen)", impact: +5, msg: "...", feedback: "" }
+                ]
+            },
+            {
+                // 4. LIA
+                messages: [
+                    { sender: "Siema", text: "LEUTE 🚨 Ich hab die News des Tages. Ihr glaubt nicht, auf wen unser \"Womanizer\" Leo steht. 😂" },
+                    { sender: "Chloe", text: "Hä, wen denn?" },
+                    { sender: "Siema", text: "Lia" },
+                    { sender: "Jason", text: "Ihhh, Lia? 🤢 Die ist doch viel zu hübsch für den. Die spielt in einer ganz anderen Liga." },
+                    { sender: "Siema", text: "Stellt euch das mal vor... Leo versucht zu flirten. Cringe des Todes. 💀" },
+                    { sender: "Noel", text: "Lass das arme Mädchen in Ruhe, du Perverser." },
+                    { sender: "Alex", text: "Auf Ernst Du bist einfach nur peinlich Leo." }
+                ],
+                options: [
+                    { text: "A: „Das stimmt überhaupt nicht!“", impact: -10, msg: "Das stimmt überhaupt nicht, ihr spinnt!", feedback: "" },
+                    { text: "B: „Lia ist nett, na und?“ (Wahrheit)", impact: +5, msg: "Lia ist nett, was ist euer Problem?", feedback: "" },
+                    { text: "C: „Halt die Fresse Siema“", impact: -20, msg: "Halt die Fresse Siema!", feedback: "" }
+                ]
+            },
+            {
+                // 5. DROHUNG
+                messages: [
+                    { sender: "Alex", text: "@Leo Du kleiner Bastard, ich hab gehört, was du über mich laberst." },
+                    { sender: "Du", text: "Hä? Ich hab gar nichts gesagt." },
+                    { sender: "Alex", text: "Halt dein Maul du Lügner. Ich weiß genau, wann du morgen zur Schule läufst. Wir warten am Hintereingang auf dich." },
+                    { sender: "Jason", text: "Morgen wird abgerechnet. Mach dich schon mal bereit, kassieren zu gehen. 👊🩸" },
+                    { sender: "Chloe", text: "Oha, Leo, an deiner Stelle würde ich mich krankmelden. Alex ist übel sauer." },
+                    { sender: "Alex", text: "Meld dich krank, versteck dich, mir egal. Wir kriegen dich sowieso du Stück Scheiße. Niemand wird dir helfen, weil dich eh keiner leiden kann." },
+                    { sender: "Siema", text: "Fick dich und dein Leben, Leo. Morgen ist Ende." }
+                ],
+                options: [
+                    { text: "A: Polizei / Eltern rufen (Notfall)", impact: +40, msg: "(Notruf gewählt...)", systemMsg: true, feedback: "" },
+                    { text: "B: Krankmelden (Verstecken)", impact: -30, msg: "...", feedback: "" },
+                    { text: "C: Morgen hingehen (Kämpfen)", impact: -50, msg: "Kommt doch, ich hab keine Angst.", feedback: "" }
+                ]
+            }
+        ];
+
+        // --- Functions ---
+
+        function updateHealth(amount) {
+            mentalHealth += amount;
+            if (mentalHealth > 100) mentalHealth = 100;
+            if (mentalHealth < 0) mentalHealth = 0;
+            
+            healthPercentText.innerText = mentalHealth + "%";
+            healthBarFill.style.width = mentalHealth + "%";
+            
+            if (mentalHealth < 30) {
+                healthBarFill.style.background = "linear-gradient(90deg, #450a0a, #dc2626)";
+                healthPercentText.style.color = "#dc2626";
+                healthPercentText.classList.add('animate-pulse');
+            } else {
+                healthBarFill.style.background = "linear-gradient(90deg, #991b1b, #dc2626)";
+                healthPercentText.style.color = "#ff0000";
+                healthPercentText.classList.remove('animate-pulse');
+            }
+        }
+
+        function createMessageElement(msg) {
+            const div = document.createElement('div');
+            
+            if (msg.type === 'system') {
+                div.className = "text-center text-xs text-red-800 italic my-2 font-mono";
+                div.innerText = "> " + msg.text;
+                return div;
+            }
+
+            div.className = `message animate-pop-in ${msg.sender === 'Du' ? 'msg-me' : 'msg-them'}`;
+            
+            let contentHtml = "";
+            
+            if (msg.sender !== 'Du') {
+                contentHtml += `<span class="sender-name sender-${msg.sender}">${msg.sender}</span>`;
+            }
+
+            if (msg.type === 'photo') {
+                contentHtml += `
+                    <div class="photo-placeholder">
+                        [ERR: IMAGE_LOAD_FAIL]<br>
+                        &gt; Leo_Seite_Komisch.jpg
+                    </div>
+                `;
+            } else {
+                contentHtml += `<span>${msg.text}</span>`;
+            }
+            
+            div.innerHTML = contentHtml;
+            return div;
+        }
+
+        function playScenario() {
+            if (mentalHealth <= 0) {
+                endGame(true);
+                return;
+            }
+            if (currentStep >= scenarios.length) {
+                endGame(false);
+                return;
+            }
+
+            const scene = scenarios[currentStep];
+            
+            optionsWrapper.classList.add('hidden');
+            buttonsContainer.innerHTML = '';
+
+            if (scene.options.length > 0 || scene.messages.length > 0) {
+                loadingText.classList.remove('hidden');
+                let i = 0;
+
+                function nextMsg() {
+                    if (i < scene.messages.length) {
+                        const msg = scene.messages[i];
+                        if (msg.sender === 'Du') {
+                            loadingText.innerText = `> Sende Nachricht...`;
+                        } else {
+                            loadingText.innerText = `> ${msg.sender} schreibt...`;
+                        }
+                        
+                        setTimeout(() => {
+                            chatArea.appendChild(createMessageElement(msg));
+                            chatArea.scrollTop = chatArea.scrollHeight;
+                            i++;
+                            nextMsg();
+                        }, 1200 + (Math.random() * 600));
+                    } else {
+                        loadingText.classList.add('hidden');
+                        if (scene.options.length > 0) {
+                            showOptions(scene.options);
+                        } else {
+                            setTimeout(() => endGame(false), 2000);
+                        }
+                    }
+                }
+                nextMsg();
+            }
+        }
+
+        function showOptions(options) {
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn";
+                btn.innerText = "> " + opt.text;
+                btn.onclick = () => handleOption(opt);
+                buttonsContainer.appendChild(btn);
+            });
+            optionsWrapper.classList.remove('hidden');
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function handleOption(opt) {
+            optionsWrapper.classList.add('hidden');
+            
+            if (opt.systemMsg) {
+                const sysDiv = document.createElement('div');
+                sysDiv.className = "text-center text-xs text-red-800 italic my-2 font-mono";
+                sysDiv.innerText = "> " + opt.msg;
+                chatArea.appendChild(sysDiv);
+            } else if (opt.msg !== "...") {
+                const myMsg = { sender: "Du", text: opt.msg };
+                chatArea.appendChild(createMessageElement(myMsg));
+            }
+
+            chatArea.scrollTop = chatArea.scrollHeight;
+            updateHealth(opt.impact);
+            
+            currentStep++;
+            setTimeout(playScenario, 1200);
+        }
+
+        function endGame(crashed) {
+            const screen = document.getElementById('game-over');
+            const text = document.getElementById('end-text');
+            
+            screen.classList.remove('hidden');
+            
+            if (crashed) {
+                // NOTE 6
+                text.innerHTML = `
+                    <span class="text-2xl font-bold block mb-4">NOTE: 6 (UNGENÜGEND)</span>
+                    SYSTEM-ABSTURZ.<br><br>
+                    LEO HAT DEN KAMPF AUFGEGEBEN.<br>
+                    ISOLATION IST KEINE LÖSUNG.<br><br>
+                    DU MUSST DIR HILFE HOLEN,<br>
+                    BEVOR ES ZU SPÄT IST.
+                `;
+            } else if (mentalHealth >= 80) {
+                // NOTE 1
+                text.innerHTML = `
+                    <span class="text-2xl font-bold block mb-4">NOTE: 1 (SEHR GUT)</span>
+                    BEDROHUNG ABGEWEHRT.<br><br>
+                    DU HAST BEWEISE GESAMMELT<br>
+                    UND HILFE GEHOLT.<br><br>
+                    DAS IST DER EINZIGE WEG,<br>
+                    MOBBING ZU STOPPEN.<br>
+                    STARKE LEISTUNG.
+                `;
+                text.classList.remove('text-red-500');
+                text.classList.add('text-green-500');
+            } else if (mentalHealth >= 40) {
+                // NOTE 3
+                text.innerHTML = `
+                    <span class="text-2xl font-bold block mb-4">NOTE: 3 (BEFRIEDIGEND)</span>
+                    STATUS: ONLINE.<br><br>
+                    DU HAST ÜBERLEBT,<br>
+                    ABER DAS SYSTEM HAT SCHADEN GENOMMEN.<br><br>
+                    NÄCHSTES MAL:<br>
+                    FRÜHER HILFE HOLEN.
+                `;
+                text.classList.remove('text-red-500');
+                text.classList.add('text-orange-500');
+            } else {
+                // NOTE 4
+                text.innerHTML = `
+                    <span class="text-2xl font-bold block mb-4">NOTE: 4 (AUSREICHEND)</span>
+                    KNAPPES ÜBERLEBEN.<br><br>
+                    DU HAST DICH ZU OFT VERSTECKT<br>
+                    ODER PROVOZIEREN LASSEN.<br><br>
+                    IN DER REALITÄT WÄRE DAS<br>
+                    SCHIEFGEGANGEN.
+                `;
+            }
+        }
+
+        window.onload = () => {
+            updateHealth(0); 
+            // Splash Screen Logic
+            const splash = document.getElementById('splash-screen');
+            const mainApp = document.getElementById('main-app');
+
+            // 1. Wartezeit für Splash (2.5s)
+            setTimeout(() => {
+                // 2. Ausblenden (Fade Out Klasse oder Style)
+                splash.style.animation = "fadeOut 0.8s ease-out forwards";
+                
+                // 3. Nach Fade-Out entfernen und App zeigen
+                setTimeout(() => {
+                    splash.style.display = "none";
+                    mainApp.style.opacity = "1"; // Main App einblenden
+                    playScenario(); // Chat starten
+                }, 800);
+
+            }, 2500);
+        };
+
+    </script>
+</body>
+</html>
